@@ -15,37 +15,23 @@ extern "C"
 {
 #endif
 
-void DrawStar2D(float centerX, float centerY, float rotationRad, struct StarParameters* param, struct StarMesh* mesh)
+void DrawStar2D(float centerX, float centerY, float rotationRad, float scale, struct StarColor* color, struct StarMesh* mesh)
 {
 	glPushMatrix();
 	glTranslatef(centerX, centerY, 0.0f);
 	glRotatef(rotationRad, 0.0f, 0.0f, 1.0f);
-	glScalef(param->radius, param->radius, 1.0f);
+    glScalef(scale, scale, scale);
 	glBegin(GL_TRIANGLES);
 
-	int tris = mesh->vertexAmount / 3;
-	int vi = 0;
-	glColor3f(param->r, param->g, param->b);
+	glColor3f(color->r, color->g, color->b);
 
-	for (int i = 0; i < tris; i++)
+	for (int i = 0; i < mesh->vertexAmount * 3; i += 3)
 	{
-		vi = i*3*3;
-		glVertex2f(mesh->vertices[vi+0], mesh->vertices[vi+1]);//, mesh->vertices[vi+2]);
-		glVertex2f(mesh->vertices[vi+3], mesh->vertices[vi+4]);//, mesh->vertices[vi+5]);
-		glVertex2f(mesh->vertices[vi+6], mesh->vertices[vi+7]);//, mesh->vertices[vi+8]);
+		glVertex2f(mesh->vertices[i+0], mesh->vertices[i+1]);//, mesh->vertices[vi+2]);
 	}
 
 	glEnd();
 	glPopMatrix();
-}
-
-void SetStarParameters(struct StarParameters *params, float radius, float chonkiness, float r, float g, float b)
-{
-	params->radius = radius;
-	params->chonkiness = chonkiness;
-	params->r=r;
-	params->g=g;
-	params->b=b;
 }
 
 static void PushVertex(struct StarMesh* mesh, vec3 v)
@@ -64,21 +50,24 @@ static vec3 rotatez(vec3 p, float angle) {
 	float zt = p.z;
 	return vec3New(xt, yt, zt);
 }
-struct StarMesh CreateStarMeshBorder(float thickness)
+struct StarMesh CreateStarMeshBorder(float radius, float chonkiness, float borderThickness)
 {
-	float pointRadius = 1.0f;
-	int sides = 1.0f;
-	float ratio = 0.5f;
+	float pointRadius = radius;
+	int sides = 1; // Change this to 2 to make both sides
+	float ratio = chonkiness;
 	float baseRadius = pointRadius * ratio;
 	//////////////////////////////////////////
 
 	struct StarMesh mesh;
-	mesh.vertices = (float*)malloc((sizeof(float) * 3) * 5 * 12);
+	mesh.vertices = (float*)malloc((sizeof(float) * 3) * 5 * 12 * sides);
 	mesh.vertexAmount = 0;
 
     vec3 point = vec3New(1.0f, 0.0f, 0.0f);
     float fifth = M_PI*2/5.0f;
     float tenth = fifth/2.0f;
+
+    // This is a magic number to make the borders of even thickness
+    float fixRatio = 0.50f;
 
     for (short side = 0; side < sides; side++)
     {
@@ -90,9 +79,9 @@ struct StarMesh CreateStarMeshBorder(float thickness)
             vec3 pointRot = rotatez(point, fifth * p + tenth);
 
 			// Inner points
-            vec3 rimPointI = vec3Multiply(pointRot, pointRadius - thickness);
-            vec3 basePoint1I = vec3Multiply(baseRot1 , baseRadius - thickness);
-            vec3 basePoint2I = vec3Multiply(baseRot2 , baseRadius - thickness);
+            vec3 rimPointI = vec3Multiply(pointRot, pointRadius - borderThickness);
+            vec3 basePoint1I = vec3Multiply(baseRot1 , baseRadius - borderThickness * fixRatio);
+            vec3 basePoint2I = vec3Multiply(baseRot2 , baseRadius - borderThickness * fixRatio);
 
 			// Outer points
             vec3 rimPointO = vec3Multiply(pointRot, pointRadius);
@@ -108,9 +97,6 @@ struct StarMesh CreateStarMeshBorder(float thickness)
                 PushVertex(&mesh, basePoint1O);
                 PushVertex(&mesh, rimPointO);
                 PushVertex(&mesh, rimPointI);
-            }
-            if (side == 0)
-            {
 
                 PushVertex(&mesh, rimPointI);
                 PushVertex(&mesh, basePoint2I);
@@ -127,17 +113,17 @@ struct StarMesh CreateStarMeshBorder(float thickness)
     return mesh;
 }
 
-struct StarMesh CreateStarMesh()
+struct StarMesh CreateStarMesh(float radius, float chonkiness)
 {
-	float pointRadius = 1.0f;
-	int sides = 1.0f;
-	float ratio = 0.5f;
+	float pointRadius = radius;
+	int sides = 1;
+	float ratio = chonkiness;
 	float baseRadius = pointRadius * ratio;
 	float thickness = 0.0f;
 	//////////////////////////////////////////
 
 	struct StarMesh mesh;
-	mesh.vertices = (float*)malloc((sizeof(float) * 3) * 5 * 6);
+	mesh.vertices = (float*)malloc((sizeof(float) * 3) * 5 * 6 * sides);
 	mesh.vertexAmount = 0;
 
     vec3 point = vec3New(1.0f, 0.0f, 0.0f);
@@ -166,42 +152,11 @@ struct StarMesh CreateStarMesh()
                 PushVertex(&mesh, topCenter);
                 PushVertex(&mesh, rimPoint);
                 PushVertex(&mesh, basePoint1);
-            }
-            /*
-            else
-            {
-                S.positions.push_back(topCenter);
-                S.positions.push_back(basePoint1);
-                S.positions.push_back(rimPoint);
-                //normal1 = CalculateTriangleNormal(basePoint1, rimPoint, topCenter);
-            }
-            for (int n = 0; n < 4; n++)
-            {
-                S.normals.push_back(normal1);
-            }
-            */
 
-            // vec3 normal2 = CalculateTriangleNormal(basePoint2, rimPoint, topCenter);
-            if (side == 0)
-            {
                 PushVertex(&mesh, topCenter);
                 PushVertex(&mesh, basePoint2);
                 PushVertex(&mesh, rimPoint);
             }
-            /*
-            else
-            {
-                S.positions.push_back(topCenter);
-                S.positions.push_back(rimPoint);
-                S.positions.push_back(basePoint2);
-                // normal2 = CalculateTriangleNormal(basePoint2, topCenter, rimPoint);
-            }
-
-            for (int n = 0; n < 4; n++)
-            {
-                S.normals.push_back(normal2);
-            }
-            */
         }
     }
 

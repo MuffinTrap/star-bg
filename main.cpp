@@ -4,7 +4,6 @@
 
 static struct StarMesh mesh;
 static struct StarMesh meshBorder;
-static struct StarParameters params;
 
 //---------------------------------------------------------------------
 void init()
@@ -12,11 +11,10 @@ void init()
     glViewport(0, 0, gdl::GetScreenWidth(), gdl::GetScreenHeight());
     gdl::InitOrthoProjection();
 
-    glClearColor(247.0f/255.0f, 1.0f, 174.0f/255.0f, 0.0f);
+    glClearColor((float)0xbd/255.0f, (float)0xb2/255.0f, (float)0xff/255.0f, 0.0f);
 
-    mesh = CreateStarMesh();
-    meshBorder = CreateStarMeshBorder(0.1f);
-    SetStarParameters(&params, 100.0f, 0.5f, 0.6f, 0.2f, 0.2);
+    mesh = CreateStarMesh(80.0f, 0.5f);
+    meshBorder = CreateStarMeshBorder(100.0f, 0.5f, 10.0f);
 }
 // Rendering callback. glFlush etc.. is done automatically after it
 void render()
@@ -25,16 +23,16 @@ void render()
 
     float rot = gdl::GetElapsedSeconds() * 20.0f;
 
-    params.r=0.7f;
-    params.radius = 100.0f;
-    DrawStar2D(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()/2, rot, &params, &mesh);
+    struct StarColor c;
+    c.r = (float)0xfa / 255.0f;
+    c.g = (float)0xd1 / 255.0f;
+    c.b = (float)0xfa / 255.0f;
+    DrawStar2D(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &mesh);
 
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < 5; i++)
     {
-        params.r= 1.0f - (float)i * 0.1f;
-        params.radius = 100 + 40 * i;
-        rot += 0.1f;
-        DrawStar2D(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()/2, rot, &params, &meshBorder);
+        float scale = 1.0f + i * 0.4f;
+        DrawStar2D(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()/2, rot,  scale, &c, &meshBorder);
     }
 }
 
