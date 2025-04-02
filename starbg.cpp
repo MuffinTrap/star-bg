@@ -15,42 +15,7 @@ extern "C"
 {
 #endif
 
-void DrawStar2D(float centerX, float centerY, float rotationRad, float scale, struct StarColor* color, struct StarMesh* mesh)
-{
-	glPushMatrix();
-	glTranslatef(centerX, centerY, 0.0f);
-	glRotatef(rotationRad, 0.0f, 0.0f, 1.0f);
-    glScalef(scale, scale, scale);
-	glBegin(GL_TRIANGLES);
-
-	glColor3f(color->r, color->g, color->b);
-
-	for (int i = 0; i < mesh->vertexAmount * 3; i += 3)
-	{
-		glVertex2f(mesh->vertices[i+0], mesh->vertices[i+1]);//, mesh->vertices[vi+2]);
-	}
-
-	glEnd();
-	glPopMatrix();
-}
-
-static void PushVertex(struct StarMesh* mesh, vec3 v)
-{
-	int va = mesh->vertexAmount;
-	mesh->vertices[va*3 + 0] = v.x;
-	mesh->vertices[va*3 + 1] = v.y;
-	mesh->vertices[va*3 + 2] = v.z;
-	mesh->vertexAmount++;
-}
-
-// -- rotate around z
-static vec3 rotatez(vec3 p, float angle) {
-	float xt = p.x*cos(angle) - p.y*sin(angle);
-	float yt = p.x*sin(angle) + p.y*cos(angle);
-	float zt = p.z;
-	return vec3New(xt, yt, zt);
-}
-struct StarMesh CreateStarMeshBorder(float radius, float chonkiness, float borderThickness)
+struct Mesh CreateStarMeshBorder(float radius, float chonkiness, float borderThickness)
 {
 	float pointRadius = radius;
 	int sides = 1; // Change this to 2 to make both sides
@@ -58,7 +23,7 @@ struct StarMesh CreateStarMeshBorder(float radius, float chonkiness, float borde
 	float baseRadius = pointRadius * ratio;
 	//////////////////////////////////////////
 
-	struct StarMesh mesh;
+	struct Mesh mesh;
 	mesh.vertices = (float*)malloc((sizeof(float) * 3) * 5 * 12 * sides);
 	mesh.vertexAmount = 0;
 
@@ -113,7 +78,7 @@ struct StarMesh CreateStarMeshBorder(float radius, float chonkiness, float borde
     return mesh;
 }
 
-struct StarMesh CreateStarMesh(float radius, float chonkiness)
+struct Mesh CreateStarMesh(float radius, float chonkiness)
 {
 	float pointRadius = radius;
 	int sides = 1;
@@ -122,7 +87,7 @@ struct StarMesh CreateStarMesh(float radius, float chonkiness)
 	float thickness = 0.0f;
 	//////////////////////////////////////////
 
-	struct StarMesh mesh;
+	struct Mesh mesh;
 	mesh.vertices = (float*)malloc((sizeof(float) * 3) * 5 * 6 * sides);
 	mesh.vertexAmount = 0;
 

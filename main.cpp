@@ -1,9 +1,12 @@
 #include <mgdl.h>
 
 #include "starbg.h"
+#include "flower.h"
 
-static struct StarMesh mesh;
-static struct StarMesh meshBorder;
+static struct Mesh star;
+static struct Mesh starBorder;
+static struct Mesh flower;
+static struct Mesh flowerCenter;
 
 //---------------------------------------------------------------------
 void init()
@@ -13,8 +16,11 @@ void init()
 
     glClearColor((float)0xbd/255.0f, (float)0xb2/255.0f, (float)0xff/255.0f, 0.0f);
 
-    mesh = CreateStarMesh(80.0f, 0.5f);
-    meshBorder = CreateStarMeshBorder(100.0f, 0.5f, 10.0f);
+    star = CreateStarMesh(80.0f, 0.5f);
+    starBorder = CreateStarMeshBorder(100.0f, 0.5f, 10.0f);
+    float flowerCenterRatio = 0.7f;
+    flower = CreateFlowerMesh(80.0f, flowerCenterRatio);
+    flowerCenter = CreateFlowerCenterMesh(80.0f, flowerCenterRatio);
 }
 // Rendering callback. glFlush etc.. is done automatically after it
 void render()
@@ -23,17 +29,26 @@ void render()
 
     float rot = gdl::GetElapsedSeconds() * 20.0f;
 
-    struct StarColor c;
+    struct Color c;
     c.r = (float)0xfa / 255.0f;
     c.g = (float)0xd1 / 255.0f;
     c.b = (float)0xfa / 255.0f;
-    DrawStar2D(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &mesh);
 
-    for (int i = 0; i < 5; i++)
-    {
-        float scale = 1.0f + i * 0.4f;
-        DrawStar2D(gdl::GetScreenWidth()/2, gdl::GetScreenHeight()/2, rot,  scale, &c, &meshBorder);
-    }
+    float fourth = gdl::GetScreenWidth() / 4.0f;
+    // Stars
+    DrawMesh(fourth * 3.0f, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &star);
+
+    float scale = 1.0f;
+    DrawMesh(fourth * 2.0f, gdl::GetScreenHeight()/2, rot,  scale, &c, &starBorder);
+
+    // flower
+    DrawMesh(fourth, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &flower);
+
+    // Flower center
+    c.r = 1.0f;
+    c.g = 1.0f;
+    c.b = 1.0f;
+    DrawMesh(fourth, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &flowerCenter);
 }
 
 
