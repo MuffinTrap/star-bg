@@ -2,7 +2,7 @@
 #define MESH_H
 
 // Vec3
-#include <mgdl/ccVector/ccVector.h>
+#include "Vec3Macros.h"
 
 #include "color.h"
 
@@ -19,9 +19,6 @@ struct Mesh
 
 void PushVertex(struct Mesh* mesh, vec3 v);
 void DrawMesh(float centerX, float centerY, float rotationRad, float scale, struct Color* color, struct Mesh* mesh);
-
-// -- rotate around z
-vec3 rotatez(vec3 p, float angle);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,7 @@
 #include "mesh.h"
 
 // OpenGL
-#include <mgdl.h>
+#include "OpenGLMacros.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -11,18 +11,12 @@ extern "C"
 void PushVertex(struct Mesh* mesh, vec3 v)
 {
 	int va = mesh->vertexAmount;
-	mesh->vertices[va*3 + 0] = v.x;
-	mesh->vertices[va*3 + 1] = v.y;
-	mesh->vertices[va*3 + 2] = v.z;
+	mesh->vertices[va*3 + 0] = V3f_X(v);
+	mesh->vertices[va*3 + 1] = V3f_Y(v);
+	mesh->vertices[va*3 + 2] = V3f_Z(v);
 	mesh->vertexAmount++;
 }
 
-vec3 rotatez(vec3 p, float angle) {
-	float xt = p.x*cos(angle) - p.y*sin(angle);
-	float yt = p.x*sin(angle) + p.y*cos(angle);
-	float zt = p.z;
-	return vec3New(xt, yt, zt);
-}
 
 void DrawMesh(float centerX, float centerY, float rotationRad, float scale, struct Color* color, struct Mesh* mesh)
 {

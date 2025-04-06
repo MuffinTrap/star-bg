@@ -29,6 +29,10 @@ MGDL_DIR	=$(HOME)/libmgdl
 MGDL_INCLUDE	= -I$(MGDL_DIR)
 CXXFLAGS += $(MGDL_INCLUDE)
 
+# Add cglm
+CGLM_DIR = $(HOME)/Dev/Wii/Libraries/cglm/include
+CXXFLAGS += -I$(CGLM_DIR)
+
 # ##########################
 # RELEASE BUILD
 ############################
