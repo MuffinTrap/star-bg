@@ -145,10 +145,10 @@ struct Ribbon CreateRibbonMesh(const float* points3D, int pointAmount, int point
 
 	// Calculate the cross section points on XY plane and then
 	// adjust them based on the direction of each sample
-    vec3 forward = V3f_Create(1.0f, 0.0f, 0.0f);
-    vec3 dirX = V3f_Create(1.0f, 0.0f, 0.0f);
-    vec3 dirY = V3f_Create(0.0f, 1.0f, 0.0f);
-    float rotationStep = M_PI*2/(float)verticesForSample;
+	vec3 forward = V3f_Create(1.0f, 0.0f, 0.0f);
+	vec3 dirX = V3f_Create(1.0f, 0.0f, 0.0f);
+	vec3 dirY = V3f_Create(0.0f, 1.0f, 0.0f);
+	float rotationStep = M_PI*2/(float)verticesForSample;
 
 	prevSegmentIndices = (uint16_t*)malloc(sizeof(uint16_t)* verticesForSample);
 	nextSegmentIndices = (uint16_t*)malloc(sizeof(uint16_t)* verticesForSample);
@@ -193,12 +193,12 @@ struct Ribbon CreateRibbonMesh(const float* points3D, int pointAmount, int point
 		V3f_FromFloatArray(points3D, ((i+3)*3), P1);
 
 		/*
-		printf("Segment %d \n", i);
-			V3f_Print(P0);
-			V3f_Print(C0);
-			V3f_Print(C1);
-			V3f_Print(P1);
-			*/
+		 *		printf("Segment %d \n", i);
+		 *			V3f_Print(P0);
+		 *			V3f_Print(C0);
+		 *			V3f_Print(C1);
+		 *			V3f_Print(P1);
+		 */
 
 		float s = 0;
 		float step = 1.0f / (float)(pointsPerBezier-1);
@@ -214,11 +214,11 @@ struct Ribbon CreateRibbonMesh(const float* points3D, int pointAmount, int point
 			s += step;
 			isFirstSegment = false;
 			/* Rainbow roading
-			float r = V3f_X(color);
-			V3f_X(color) = V3f_Y(color);
-			V3f_Y(color) = V3f_Z(color);
-			V3f_Z(color) = r;
-			*/
+			 *			float r = V3f_X(color);
+			 *			V3f_X(color) = V3f_Y(color);
+			 *			V3f_Y(color) = V3f_Z(color);
+			 *			V3f_Z(color) = r;
+			 */
 		}
 	}
 
@@ -253,14 +253,14 @@ void DrawRibbonPartially(struct Ribbon* ribbon, int startPercentage, int endPerc
 	int vertexStart = startPoints * ribbon->verticesOnCrossSection;
 
 	/* Debug prints
-	static int frame = 0;
-	if (frame % 60 == 0)
-	{
-		//printf("Start perc %d end perc %d\n", startPercentage, endPercentage);
-		//printf("Start points %d amount points %d\n", startPoints, amountPoints);
-		// printf("Draw from V %d/%d, %d indices \n", vertexStart, ribbon->mesh->max_vertices, indiceCount);
-	}
-	frame++;
-	*/
+	 *	static int frame = 0;
+	 *	if (frame % 60 == 0)
+	 *	{
+	 *		//printf("Start perc %d end perc %d\n", startPercentage, endPercentage);
+	 *		//printf("Start points %d amount points %d\n", startPoints, amountPoints);
+	 *		// printf("Draw from V %d/%d, %d indices \n", vertexStart, ribbon->mesh->max_vertices, indiceCount);
+}
+frame++;
+*/
 	DrawProceduralMeshPartial(ribbon->mesh, 0, indiceCount, vertexStart);
 }
