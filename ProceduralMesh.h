@@ -32,6 +32,7 @@ void InitProceduralMesh(
 int PushVertexProceduralMesh(struct ProceduralMesh* mesh, vec3 position, vec3 colour);
 void PushTriangleProceduralMesh(struct ProceduralMesh* mesh, uint16_t a, uint16_t b, uint16_t c);
 void DrawProceduralMesh(struct ProceduralMesh* mesh);
+void DrawProceduralMeshPartial(struct ProceduralMesh* mesh, int startIndex, int indexCount, int startVertex);
 
 void SetPositionProceduralMesh(struct ProceduralMesh* mesh, float x, float y, float z);
 void SetScaleProceduralMesh(struct ProceduralMesh* mesh, float scale);

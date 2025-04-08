@@ -3,13 +3,21 @@
 #include "Star.h"
 #include "Flower.h"
 #include "Ribbon.h"
+#include "BezierCurve.h"
+
 
 static struct ProceduralMesh star;
 static struct ProceduralMesh starBorder;
 static struct ProceduralMesh flower;
 static struct ProceduralMesh flowerCenter;
-static struct ProceduralMesh ribbon;
-static float* splinePoints;
+static struct Ribbon ribbon;
+
+static int ribbonPoints;
+static int ribbonPointsPerSegments;
+static int ribbonDrawStart = 0;
+static int ribbonDrawEnd = 100;
+
+static gdl::Font* debugFont;
 
 //---------------------------------------------------------------------
 void init()
@@ -24,6 +32,8 @@ void init()
 
     glClearColor((float)0xbd/255.0f, (float)0xb2/255.0f, (float)0xff/255.0f, 0.0f);
 
+    debugFont = gdl::GetDebugFont();
+
     vec3 color = V3f_Create(0.6f, 0.5f, 0.9f);
 
     float flowerCenterRatio = 0.7f;
@@ -32,25 +42,27 @@ void init()
     starBorder = CreateStarMeshBorder(10.0f, 0.5f, 1.0f);
     flowerCenter = CreateFlowerCenterMesh(80.0f, flowerCenterRatio);
 
+    ribbonPoints = 7;
+    ribbonPointsPerSegments = 14;
+    struct BezierCurve curve;
+    InitBezierCurve(&curve, ribbonPoints);
 
-    splinePoints = (float*)malloc(sizeof(float)*12);
-    splinePoints[0] = -10.0f;
-    splinePoints[1] = 0.0f;
-    splinePoints[2] = 0.0f;
+    PushVertexBezierCurveXYZ(&curve, -9.0f , -9.0f,  -9.0f);
+    PushVertexBezierCurveXYZ(&curve, -4.0f ,   -4.0f  , -3.0f);
+    PushVertexBezierCurveXYZ(&curve, 14.0f  ,  5.0f  , -3.0f);
+    PushVertexBezierCurveXYZ(&curve, 0.0f  ,  10.0f  , 8.0f);
+    PushVertexBezierCurveXYZ(&curve, -2.0f ,   5.0f  , -8.0f);
+    PushVertexBezierCurveXYZ(&curve, 16.0f  ,  -5.0f  , 0.0f);
+    PushVertexBezierCurveXYZ(&curve, -8.0f , -10.0f,  10.0f);
 
-    splinePoints[3] = 0.0f;
-    splinePoints[4] = 0.0f + 10.0f;
-    splinePoints[5] = 0.0f;
+    float* splinePoints = NULL;
+    ConvertBezierCurveToFloatArray(&curve, &splinePoints);
 
-    splinePoints[6] = 10.0f;
-    splinePoints[7] = 0.0f;
-    splinePoints[8] = 0.0f;
 
-    splinePoints[9] = 14.0f;
-    splinePoints[10] = -10.0f;
-    splinePoints[11] = 0.0f;
+    ribbon = CreateRibbonMesh(splinePoints, curve.vertexAmount, ribbonPointsPerSegments, 5, 3.0f, 0xfa, 0x0d, 0x54);
 
-    ribbon = CreateRibbonMesh(splinePoints, 4, 8);
+    FreeBezierCurve(&curve);
+    free(splinePoints);
 
     SetPositionProceduralMesh(&flower, 0.8f, 0.0f, -1.0f);
     SetScaleProceduralMesh(&flower, 0.1f);
@@ -60,13 +72,20 @@ void init()
 
     SetPositionProceduralMesh(&starBorder, -0.8f, 0.8f, -1.0f);
     SetScaleProceduralMesh(&starBorder, 0.1f);
+
+
 }
 // Rendering callback. glFlush etc.. is done automatically after it
 void render()
 {
     gdl::cross_glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    gdl::InitPerspectiveProjection(90.0f, 0.1f, 100.0f);
+    vec3 cp = V3f_Create(0.0f, 0.0f, 1.0f);
+    vec3 ct = V3f_Create(0.0f, 0.0f, 0.0f);
+    vec3 cup = V3f_Create(0.0f, 1.0f, 0.0f);
+    gdl::InitCamera(cp, ct, cup);
 
-    float rot = gdl::GetElapsedSeconds() * 20.0f;
+    float rot = gdl::GetElapsedSeconds() * 40.0f;
 
     /*
     vec3 color;
@@ -76,12 +95,12 @@ void render()
     int scrW = gdl::GetScreenWidth();
     int scrH = gdl::GetScreenHeight();
 
-    DrawProceduralMesh(&flower);
+    //DrawProceduralMesh(&flower);
 
     float fourth = 0.25f;
     // Stars
-    DrawProceduralMesh(&star);
-    DrawProceduralMesh(&starBorder);
+    //DrawProceduralMesh(&star);
+    //DrawProceduralMesh(&starBorder);
     /*
 
     float scale = 1.0f;
@@ -95,9 +114,11 @@ void render()
     DrawMesh(fourth, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &flowerCenter);
     */
 
-    SetPositionProceduralMesh(&ribbon, 0.0f, 0.0f, -1.0f);
-    SetScaleProceduralMesh(&ribbon, 0.1f);
-    DrawProceduralMesh(&ribbon);
+    SetPositionProceduralMesh(ribbon.mesh, 0.0f, 0.0f, -1.0f);
+    SetRotationsProceduralMesh(ribbon.mesh, rot*2.0f, rot, rot*0.5f);
+    SetScaleProceduralMesh(ribbon.mesh, 0.1f);
+    // DrawProceduralMesh(ribbon.mesh);
+    DrawRibbonPartially(&ribbon, ribbonDrawStart, ribbonDrawEnd);
 
 
     /*
@@ -122,6 +143,9 @@ void render()
 	glEnd();
 	glPopMatrix();
 	*/
+    gdl::InitOrthoProjection();
+    debugFont->Printf(gdl::Colors::White, 10, scrH, 16, "Ribbon Draw %d -> %d", ribbonDrawStart, ribbonDrawEnd);
+
 }
 
 
@@ -132,6 +156,22 @@ void update()
     {
         gdl::Platform& plat = gdl::Platform::GetPlatform();
         plat.DoProgramExit();
+    }
+    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonUp))
+    {
+        ribbonDrawStart += 1;
+    }
+    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonDown))
+    {
+        ribbonDrawStart -= 1;
+    }
+    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonLeft))
+    {
+        ribbonDrawEnd -= 1;
+    }
+    if (gdl::GetController(0).ButtonPress(gdl::WiiButtons::ButtonRight))
+    {
+        ribbonDrawEnd += 1;
     }
 }
 

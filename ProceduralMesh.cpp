@@ -163,6 +163,54 @@ void DrawProceduralMesh(struct ProceduralMesh* mesh) {
     glPopMatrix();
 }
 
+void DrawProceduralMeshPartial(struct ProceduralMesh* mesh, int startIndex, int indexCount, int startVertex)
+{
+    // Enable and configure depth testing
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glDisable(GL_CULL_FACE);
+
+    // Enable lighting and normalization
+    //glEnable(GL_LIGHTING);
+    glEnable(GL_NORMALIZE);
+
+    mat4 model;
+    glPushMatrix();
+    glTranslatef(mesh->position_x, mesh->position_y, mesh->position_z);
+    glRotatef(mesh->pitch, 1.0f, 0.0f, 0.0f);
+    glRotatef(mesh->yaw,   0.0f, 1.0f, 0.0f);
+    glRotatef(mesh->roll,  0.0f, 0.0f, 1.0f);
+    glScalef(mesh->scale_x, mesh->scale_y, mesh->scale_z);
+
+    // Enable vertex and color arrays
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    // Point OpenGL to your data
+    glVertexPointer(3, GL_FLOAT, 0, &mesh->vertices[startVertex]);
+    glColorPointer(3, GL_FLOAT, 0, &mesh->colours[startVertex]);
+
+    // Draw the indexed triangles
+    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_SHORT, &mesh->indecies[startIndex]);
+
+    // Clean up
+    glDisableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_COLOR_ARRAY);
+
+/*
+    glBegin(GL_LINES);
+    for (int i = 0; i < mesh->vertex_count; i++) {
+        glColor3f(mesh->colours[i][0], mesh->colours[i][1], mesh->colours[idx][2]);
+        glVertex3f(mesh->vertices[i][0], mesh->vertices[i][1], mesh->vertices[i][2]);
+        //printf("%i(%f;%f;%f);", idx, mesh->vertices[idx][0], mesh->vertices[idx][1], mesh->vertices[idx][2]);
+    }
+    glEnd();*/
+    //printf("\n\n\n\n");
+    glPopMatrix();
+
+
+}
+
 void SetPositionProceduralMesh(struct ProceduralMesh* mesh, float x, float y, float z)
 {
     mesh->position_x = x;
