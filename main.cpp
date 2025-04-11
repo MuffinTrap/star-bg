@@ -4,12 +4,14 @@
 #include "Flower.h"
 #include "Ribbon.h"
 #include "BezierCurve.h"
+#include "Cloud.h"
 
 
 static struct ProceduralMesh star;
 static struct ProceduralMesh starBorder;
 static struct ProceduralMesh flower;
 static struct ProceduralMesh flowerCenter;
+static struct ProceduralMesh clouds[10];
 static struct Ribbon ribbon;
 
 static int ribbonPoints;
@@ -41,7 +43,38 @@ void init()
     star = CreateStarMesh(10.0f, 0.5f);
     starBorder = CreateStarMeshBorder(10.0f, 0.5f, 1.0f);
     flowerCenter = CreateFlowerCenterMesh(80.0f, flowerCenterRatio);
+    int c = 0;
+    int r = 0;
+    for (int i = 0; i < 10; i++)
+    {
+        clouds[i] = CreateCloudMesh(12.0f, 4, 1.0f);
+        SetPositionProceduralMesh(&clouds[i], -2.5f + c * 4.5, -2.5 + r * 1.5f, -2.0f);
+        SetScaleProceduralMesh(&clouds[i], 0.05f);
 
+        c++;
+        if (c >= 2) { c= 0; r++;}
+    }
+
+    /* RIBBON
+     */
+
+    // Positions
+
+    SetPositionProceduralMesh(&flower, 0.8f, 0.0f, -1.0f);
+    SetScaleProceduralMesh(&flower, 0.1f);
+
+    SetPositionProceduralMesh(&star, -0.8f, -0.8f, -1.0f);
+    SetScaleProceduralMesh(&star, 0.1f);
+
+    SetPositionProceduralMesh(&starBorder, -0.8f, 0.8f, -1.0f);
+    SetScaleProceduralMesh(&starBorder, 0.1f);
+
+
+}
+
+
+void CreateRibbon()
+{
     ribbonPoints = 7;
     ribbonPointsPerSegments = 14;
     struct BezierCurve curve;
@@ -58,23 +91,14 @@ void init()
     float* splinePoints = NULL;
     ConvertBezierCurveToFloatArray(&curve, &splinePoints);
 
-
     ribbon = CreateRibbonMesh(splinePoints, curve.vertexAmount, ribbonPointsPerSegments, 5, 3.0f, 0xfa, 0x0d, 0x54);
 
     FreeBezierCurve(&curve);
     free(splinePoints);
-
-    SetPositionProceduralMesh(&flower, 0.8f, 0.0f, -1.0f);
-    SetScaleProceduralMesh(&flower, 0.1f);
-
-    SetPositionProceduralMesh(&star, -0.8f, -0.8f, -1.0f);
-    SetScaleProceduralMesh(&star, 0.1f);
-
-    SetPositionProceduralMesh(&starBorder, -0.8f, 0.8f, -1.0f);
-    SetScaleProceduralMesh(&starBorder, 0.1f);
-
-
 }
+
+
+
 // Rendering callback. glFlush etc.. is done automatically after it
 void render()
 {
@@ -97,7 +121,6 @@ void render()
 
     //DrawProceduralMesh(&flower);
 
-    float fourth = 0.25f;
     // Stars
     //DrawProceduralMesh(&star);
     //DrawProceduralMesh(&starBorder);
@@ -114,38 +137,25 @@ void render()
     DrawMesh(fourth, gdl::GetScreenHeight()/2, rot, 1.0f,  &c, &flowerCenter);
     */
 
+    // Ribbon
+    /*
     SetPositionProceduralMesh(ribbon.mesh, 0.0f, 0.0f, -1.0f);
     SetRotationsProceduralMesh(ribbon.mesh, rot*2.0f, rot, rot*0.5f);
     SetScaleProceduralMesh(ribbon.mesh, 0.1f);
     // DrawProceduralMesh(ribbon.mesh);
     DrawRibbonPartially(&ribbon, ribbonDrawStart, ribbonDrawEnd);
+    */
 
 
-    /*
-    float centerX = 0.0f;
-    float centerY = 0.0f;
-    float rotationRad = 0.0f;
-    float scale = 1.0f;
+    // Cloud
+    for (int i = 0; i < 10; i++)
+    {
+        DrawProceduralMesh(&clouds[i]);
+    }
 
-	glPushMatrix();
-	glTranslatef(centerX, centerY, 0.0f);
-	glRotatef(rotationRad, 0.0f, 0.0f, 1.0f);
-    glScalef(scale, scale, scale);
-	//glBegin(GL_LINE_LOOP);
-	//glBegin(GL_TRIANGLES);
-	glBegin(GL_LINES);
 
-	glColor3f(color.r, color.g, color.b);
-
-    glVertex3f(0.0f, 0.0f, -1.0f);
-    glVertex3f(scrW, scrH, -1.0f);
-
-	glEnd();
-	glPopMatrix();
-	*/
     gdl::InitOrthoProjection();
     debugFont->Printf(gdl::Colors::White, 10, scrH, 16, "Ribbon Draw %d -> %d", ribbonDrawStart, ribbonDrawEnd);
-
 }
 
 
