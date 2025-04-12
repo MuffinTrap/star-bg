@@ -2,6 +2,13 @@
 
 
 #ifdef CC_VECTOR
+vec3 V3f_RotateYFunc(vec3 p, float angle) {
+	float xt = p.x*cos(angle) - p.z*sin(angle);
+	float yt = p.y;
+	float zt = p.x*sin(angle) + p.z*cos(angle);
+	return vec3New(xt, yt, zt);
+}
+
 vec3 V3f_RotateZFunc(vec3 p, float angle) {
 	float xt = p.x*cos(angle) - p.y*sin(angle);
 	float yt = p.x*sin(angle) + p.y*cos(angle);
@@ -32,6 +39,13 @@ vec3 V3f_BezierFuncV3(float s, vec3 P0, vec3 C0, vec3 C1, vec3 P1)
 	return current;
 }
 #else
+
+void V3f_RotateYFunc(vec3 p, float angle, vec3 out)
+{
+    out[0] = p[0]*cosf(angle) - p[2]*sinf(angle);
+    out[1] = p[1];
+    out[2] = p[0]*sinf(angle) + p[2]*cosf(angle);
+}
 
 void V3f_RotateZFunc(vec3 p, float angle, vec3 out)
 {

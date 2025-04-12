@@ -27,9 +27,13 @@ extern "C"
 #define V3f_Cross(Va, Vb, dest) dest = Vec3Cross(Va, Vb);
 #define V3f_Dot(Va, Vb) Vec3Dot(Va, Vb);
 
+	// Rotations
+vec3 V3f_RotateYFunc(vec3 source, float angle);
+#define V3f_RotateY(source, angle, dest) dest = V3f_RotateYFunc(source, angle);
 
 vec3 V3f_RotateZFunc(vec3 source, float angle);
 #define V3f_RotateZ(source, angle, dest) dest = V3f_RotateZFunc(source, angle);
+
 
 vec3 V3f_HexToColorFunc(int red, int green, int blue);
 #define V3f_HexToColor(red, green, blue, dest); dest = V3f_HexToColorFunc(red, green, blue);
@@ -64,6 +68,8 @@ vec3 V3f_BezierFuncV3(float s, vec3 P0, vec3 C0, vec3 C1, vec3 P1);
 #define V3f_Y(Va) Va[1]
 #define V3f_Z(Va) Va[2]
 
+void V3f_RotateYFunc(vec3 p, float angle, vec3 out);
+#define V3f_RotateY(source, angle, dest) V3f_RotateYFunc(source, angle, dest);
 
 void V3f_RotateZFunc(vec3 p, float angle, vec3 out);
 #define V3f_RotateZ(source, angle, dest) V3f_RotateZFunc(source, angle, dest);

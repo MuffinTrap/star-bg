@@ -5,6 +5,7 @@
 #include "Ribbon.h"
 #include "BezierCurve.h"
 #include "Cloud.h"
+#include "SkyCylinder.h"
 
 
 static struct ProceduralMesh star;
@@ -13,11 +14,14 @@ static struct ProceduralMesh flower;
 static struct ProceduralMesh flowerCenter;
 static struct ProceduralMesh clouds[10];
 static struct Ribbon ribbon;
+static struct SkyCylinder cylinder;
 
 static int ribbonPoints;
 static int ribbonPointsPerSegments;
 static int ribbonDrawStart = 0;
 static int ribbonDrawEnd = 100;
+
+static int cloudsAmount = 10;
 
 static gdl::Font* debugFont;
 
@@ -45,15 +49,27 @@ void init()
     flowerCenter = CreateFlowerCenterMesh(80.0f, flowerCenterRatio);
     int c = 0;
     int r = 0;
-    for (int i = 0; i < 10; i++)
+    cylinder.radius = 200.0f; // This needs to be huge compared to clouds!
+    float tau = M_PI * 2.0f;
+    float angleStep = tau/(float)cloudsAmount;
+    for (int i = 0; i < cloudsAmount; i++)
     {
-        clouds[i] = CreateCloudMesh(12.0f, 4, 1.0f);
-        SetPositionProceduralMesh(&clouds[i], -2.5f + c * 4.5, -2.5 + r * 1.5f, -2.0f);
+        clouds[i] = CreateCloudMesh(12.0f, 4, 0.0f);
+        float y = -12.5 + r * 5.5f;
+        float angle = i * angleStep;
+        ProjectMeshToCylinder(&clouds[i], &cylinder, y, angle);
+
+        //SetPositionProceduralMesh(&clouds[i], -2.5f + c * 4.5, -2.5 + r * 1.5f, -2.0f);
+        SetPositionProceduralMesh(&clouds[i], 0.0f, 0.0f, -2.0f);
         SetScaleProceduralMesh(&clouds[i], 0.05f);
 
         c++;
         if (c >= 2) { c= 0; r++;}
     }
+
+    printf("Rotation test\n");
+
+
 
     /* RIBBON
      */
@@ -104,8 +120,8 @@ void render()
 {
     gdl::cross_glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     gdl::InitPerspectiveProjection(90.0f, 0.1f, 100.0f);
-    vec3 cp = V3f_Create(0.0f, 0.0f, 1.0f);
-    vec3 ct = V3f_Create(0.0f, 0.0f, 0.0f);
+    vec3 cp = V3f_Create(0.0f, 0.0f, 0.0f);
+    vec3 ct = V3f_Create(0.0f, 0.0f, -1.0f);
     vec3 cup = V3f_Create(0.0f, 1.0f, 0.0f);
     gdl::InitCamera(cp, ct, cup);
 
@@ -148,14 +164,17 @@ void render()
 
 
     // Cloud
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < cloudsAmount; i++)
     {
+        SetRotationsProceduralMesh(&clouds[i], 0.0f, rot, 0.0f);
         DrawProceduralMesh(&clouds[i]);
     }
 
 
     gdl::InitOrthoProjection();
     debugFont->Printf(gdl::Colors::White, 10, scrH, 16, "Ribbon Draw %d -> %d", ribbonDrawStart, ribbonDrawEnd);
+    int rotDeg = ((int)rot) % 360;
+    debugFont->Printf(gdl::Colors::White, 10, scrH-16, 16, "Cylinder rotation %d", rotDeg);
 }
 
 
